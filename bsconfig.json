@@ -1,0 +1,6 @@
+{
+  "name": "checkers",
+  "version": "0.1.0",
+  "sources": ["src", "tests"],
+  "bs-dependencies": ["@pckilgore/bs-biginteger"]
+}
