@@ -18,21 +18,36 @@ let init () =
   }
 
 let click x y game =
+  let _ = Js.log "click" in
+  let _ = Js.log (x,y) in
+  let _ = Js.log @@ Array.of_list @@ CheckersMoveSet.elements game.allowedMoves in
   match game.selectedChecker with
   | None ->
+    let moveTo =
+      match checkerAt x y game.board with
+      | Some ch ->
+        availableMovesForChecker ch x y game.board
+      | None -> []
+    in
+    let canMove =
+      moveTo
+      |> List.map
+        (fun (ex,ey) -> { fromX = x ; fromY = y ; toX = ex ; toY = ey })
+      |> CheckersMoveSet.of_list
+    in
     { game with
       selectedChecker = Some (x,y)
+    ; allowedMoves = canMove
     }
   | Some (bx,by) ->
-    let moveTo =
-      match checkerAt bx by game.board with
-      | Some ch ->
-        availableMovesForChecker ch bx by game.board
-        |> PointSet.of_list
-      | None -> PointSet.empty
-    in
-    if PointSet.mem (x,y) moveTo then
-      let m = { fromX = bx ; fromY = by ; toX = x ; toY = y } in
+    let m = { fromX = bx ; fromY = by ; toX = x ; toY = y } in
+    let _ = Js.log "Want move" in
+    let _ = Js.log game.allowedMoves in
+    if CheckersMoveSet.mem m game.allowedMoves then
+      let allMoves =
+        availableMoves game.board
+        |> CheckersMoveSet.of_list
+      in
       move m game.board
       |> Option.map
         (fun newBoard ->
@@ -46,6 +61,10 @@ let click x y game =
            ; allowedMoves = newMoves
            }
         )
-      |> Option.default { game with selectedChecker = None }
+      |> Option.default
+        { game with
+          selectedChecker = None
+        ; allowedMoves = allMoves
+        }
     else
       { game with selectedChecker = None }
