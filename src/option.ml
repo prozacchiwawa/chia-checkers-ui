@@ -9,3 +9,7 @@ let bind f = function
 let filter f = function
   | Some x -> if f x then Some x else None
   | None -> None
+
+let default v = function
+  | Some x -> x
+  | _ -> v

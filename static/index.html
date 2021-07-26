@@ -1,0 +1,109 @@
+<html>
+    <head>
+        <title>Checkers</title>
+        <style>
+         .checkers-row {
+             position: relative;
+             display: flex;
+             flex-direction: row;
+         }
+
+         .checkers-board {
+             position: relative;
+             display: flex;
+             flex-direction: column;
+         }
+
+         .square-highlight {
+             position: relative;
+             left: 0;
+             top: 0;
+             width: 100%;
+             height: 100%;
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             justify-content: center;
+
+	           animation-name: backgroundColorPalette;
+	           animation-duration: 0.7s;
+	           animation-iteration-count: infinite;
+	           animation-direction: alternate;
+	           animation-timing-function: linear;
+         }
+
+         @keyframes backgroundColorPalette {
+             0% {
+                 background: rgba(255,255,255,0.8);
+             }
+
+             100% {
+                 background: rgba(0,0,0,0.3);
+             }
+         }
+
+         .square-dark {
+             position: relative;
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             justify-content: center;
+             width: 2em;
+             height: 2em;
+             background-color: #542;
+         }
+
+         .square-light {
+             position: relative;
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             justify-content: center;
+             width: 2em;
+             height: 2em;
+             background-color: #ff9;
+         }
+
+         .piece-red {
+             position: relative;
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             justify-content: center;
+             width: 1.5em;
+             height: 1.5em;
+             background-color: red;
+             border-radius: 0.75em;
+             border: 1px solid black;
+             color: black;
+         }
+
+         .piece-black {
+             position: relative;
+             display: flex;
+             flex-direction: row;
+             align-items: center;
+             justify-content: center;
+             width: 1.5em;
+             height: 1.5em;
+             background-color: #333;
+             border-radius: 0.75em;
+             border: 1px solid white;
+             color: #ddd;
+         }
+
+         .king::after {
+             content: "\2388";
+         }
+
+         .pawn::after {
+             margin-top: -0.25em;
+             content: "\25cb";
+         }
+        </style>
+    </head>
+    <body>
+        <div id="app"></div>
+        <script src="./index.js"></script>
+    </body>
+</html>

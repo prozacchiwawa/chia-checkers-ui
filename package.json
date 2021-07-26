@@ -12,10 +12,12 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^17.0.0",
     "bs-platform": "^9.0.2"
   },
   "dependencies": {
     "@pckilgore/bs-biginteger": "^1.0.1",
-    "big-integer": "^1.6.48"
+    "big-integer": "^1.6.48",
+    "bucklescript-tea": "^0.15.0"
   }
 }

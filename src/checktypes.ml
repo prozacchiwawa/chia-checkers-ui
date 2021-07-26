@@ -18,6 +18,13 @@ type checkersMove =
   ; toY : int
   }
 
+module CheckersMoveOrd = struct
+  type t = checkersMove
+  let compare a b = Pervasives.compare a b
+end
+
+module CheckersMoveSet = Set.Make(CheckersMoveOrd)
+
 let zero = BigInteger.bigInt (`Int 0)
 let one = BigInteger.bigInt (`Int 1)
 
@@ -137,7 +144,7 @@ let jumps c m b =
   in
   next_jump_ [] 1 |> Option.map PointSet.of_list
 
-let backward c dy = if c = Black then dy > 0 else dy < 0
+let backward c dy = if c = Black then dy < 0 else dy > 0
 
 let nextMove b = { b with next = otherColor b.next }
 
@@ -210,7 +217,11 @@ let availableMovesForChecker c x y b =
     |> List.map (fun (dx,dy) -> availableJumps [] 1 (checkerColor c) dx dy x y b)
     |> List.concat
   in
-  List.concat [jumps ; oneSpaceMovesNotBlocked]
+  List.concat
+    [ jumps
+    ; oneSpaceMovesNotBlocked
+      |> List.map (fun (dx,dy) -> (x + dx, y + dy))
+    ]
 
 let rec listCheckersWithColor n c b =
   if n >= 64 then
@@ -219,18 +230,22 @@ let rec listCheckersWithColor n c b =
     let x = n mod 8 in
     let y = n / 8 in
     let chq = checkerAt x y b in
-    let color = chq |> Option.map checkerColor = Some c in
     let rest = listCheckersWithColor (n+1) c b in
     let head =
       match chq with
-      | Some (King _) -> [(x,y,King c)]
-      | Some (Pawn _) -> [(x,y,Pawn c)]
+      | Some (King pc) -> if pc = c then [(x,y,King c)] else []
+      | Some (Pawn pc) -> if pc = c then [(x,y,Pawn c)] else []
       | _ -> []
     in
     List.concat [head ; rest]
 
+let colorToString = function
+  | Red -> "red"
+  | Black -> "black"
+
 let availableMoves b =
-  listCheckersWithColor 0 b.next b
+  let withColor = listCheckersWithColor 0 b.next b in
+  withColor
   |> List.map
     (fun (x,y,c) ->
        availableMovesForChecker c x y b
@@ -269,3 +284,4 @@ let standardBoard =
   |> List.fold_left
     (fun b (x,y,c) -> addChecker x y (Pawn c) b)
     emptyBoard
+
