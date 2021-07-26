@@ -42,12 +42,19 @@ let click x y game =
   | Some (bx,by) ->
     let m = { fromX = bx ; fromY = by ; toX = x ; toY = y } in
     let _ = Js.log "Want move" in
-    let _ = Js.log game.allowedMoves in
+    let _ = Js.log m in
+    let _ = Js.log @@ Array.of_list @@ CheckersMoveSet.elements game.allowedMoves in
+    let afterRejectMoves =
+      availableMoves game.board
+      |> CheckersMoveSet.of_list
+    in
+    let rejectGame =
+      { game with
+        selectedChecker = None
+      ; allowedMoves = afterRejectMoves
+      }
+    in
     if CheckersMoveSet.mem m game.allowedMoves then
-      let allMoves =
-        availableMoves game.board
-        |> CheckersMoveSet.of_list
-      in
       move m game.board
       |> Option.map
         (fun newBoard ->
@@ -61,10 +68,6 @@ let click x y game =
            ; allowedMoves = newMoves
            }
         )
-      |> Option.default
-        { game with
-          selectedChecker = None
-        ; allowedMoves = allMoves
-        }
+      |> Option.default rejectGame
     else
-      { game with selectedChecker = None }
+      rejectGame
