@@ -65,10 +65,10 @@ let removeChecker x y b =
     BigInteger.compare
       (BigInteger.and_ b.black (`BigInt mask)) (`BigInt zero) != EqualTo
   in
-  { king = BigInteger.xor b.king @@ `BigInt (if withKing then mask else zero)
+  { b with
+    king = BigInteger.xor b.king @@ `BigInt (if withKing then mask else zero)
   ; red = BigInteger.xor b.red @@ `BigInt (if withRed then mask else zero)
   ; black = BigInteger.xor b.black @@ `BigInt (if withBlack then mask else zero)
-  ; next = Black
   }
 
 let isKing = function
@@ -175,8 +175,8 @@ let move m b =
          (fun b (x,y) -> removeChecker x y b)
          (removeChecker m.fromX m.fromY b)
        |> addChecker m.toX m.toY checker
-       |> nextMove
     )
+  |> Option.map nextMove
 
 (* For some direction dx, dy, check each possible jump to see if jumps
  * detects that it's a valid jump
