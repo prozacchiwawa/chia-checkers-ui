@@ -80,8 +80,8 @@ let inBounds x y = x >= 0 && x < 8 && y >= 0 && y < 8
 let manhattanDistance m = abs (m.toY - m.fromY)
 
 let direction m =
-  let rise = m.toY - m.fromY in
   let run = m.toX - m.fromX in
+  let rise = m.toY - m.fromY in
   (run, rise)
 
 (* Requires either a slope of 1 or -1 *)
@@ -89,7 +89,7 @@ let validDiagonal m =
   if m.fromX == m.toX || m.fromY == m.toY then
     false
   else
-    let (rise, run) = direction m in
+    let (run, rise) = direction m in
     abs rise == abs run
 
 let checkerColor = function
@@ -134,13 +134,16 @@ let jumps c m b =
       , Option.map checkerColor theChecker = Some oc
       )
     in
+    let _ = Js.log "jump?" in
+    let _ = Js.log m in
+    let _ = Js.log s in
+    let _ = Js.log jumpState in
     match jumpState with
-    | (true, true, None, _   ) -> Some a
-    | (true, _   , _   , _   ) -> None
-    | (_   , true, None, _   ) -> next_jump_ a (s + 1)
-    | (_   , true, _   , _   ) -> None
-    | (_   , _,  Some _, true) -> next_jump_ ((atX,atY) :: a) (s + 1)
-    | _                        -> None
+    | (true, true , None  , _   ) -> Some a
+    | (_   , true , Some _, _   ) -> None
+    | (_   , false, _     , true) -> next_jump_ ((atX,atY) :: a) (s + 1)
+    | (_   , true , None  , _   ) -> next_jump_ a (s + 1)
+    | _                           -> None
   in
   next_jump_ [] 1 |> Option.map PointSet.of_list
 
@@ -154,19 +157,12 @@ let move m b =
   let _ = Js.log (dx,dy) in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
-  |> Option.map (fun ch -> Js.log 1 ; ch)
   |> Option.filter (fun ch -> b.next = checkerColor ch)
-  |> Option.map (fun ch -> Js.log 2 ; ch)
   |> Option.filter (fun _ -> validDiagonal m)
-  |> Option.map (fun ch -> Js.log 3 ; ch)
   |> Option.filter (fun _ -> checkerAt m.toX m.toY b = None)
-  |> Option.map (fun ch -> Js.log 4 ; ch)
   |> Option.map isKing
-  |> Option.map (fun ch -> Js.log 5 ; ch)
   |> Option.filter (fun king -> king || forward b.next dy)
-  |> Option.map (fun ch -> Js.log 6 ; ch)
   |> Option.map (fun king -> if king then King b.next else Pawn b.next)
-  |> Option.map (fun ch -> Js.log 7 ; ch)
   |> Option.bind
     (fun checker ->
        let jumps =
@@ -177,7 +173,6 @@ let move m b =
        in
        jumps |> Option.map (fun j -> (checker,j))
     )
-  |> Option.map (fun ch -> Js.log 8 ; ch)
   |> Option.map
     (fun (checker,jumps) ->
        jumps
@@ -186,7 +181,6 @@ let move m b =
          (removeChecker m.fromX m.fromY b)
        |> addChecker m.toX m.toY checker
     )
-  |> Option.map (fun ch -> Js.log 9 ; ch)
   |> Option.map nextMove
 
 (* For some direction dx, dy, check each possible jump to see if jumps
@@ -225,7 +219,7 @@ let availableMovesForChecker c x y b =
   in
   let jumps =
     oneSpaceMovesInBounds
-    |> List.map (fun (dx,dy) -> availableJumps [] 1 (checkerColor c) dx dy x y b)
+    |> List.map (fun (dx,dy) -> availableJumps [] 2 (checkerColor c) dx dy x y b)
     |> List.concat
   in
   List.concat
