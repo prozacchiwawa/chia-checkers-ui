@@ -5,3 +5,7 @@ let map f = function
 let bind f = function
   | Some x -> f x
   | None -> None
+
+let filter f = function
+  | Some x -> if f x then Some x else None
+  | None -> None

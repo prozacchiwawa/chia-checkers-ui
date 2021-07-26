@@ -1,8 +1,7 @@
 open Checktypes
 
-let emptyBoard = { red = zero ; black = zero ; king = zero }
-let red44 = { red = maskFor 4 4 ; black = zero ; king = zero }
-let blackKing44 = { red = zero ; black = maskFor 4 4 ; king = maskFor 4 4 }
+let red44 = { red = maskFor 4 4 ; black = zero ; king = zero ; next = Black }
+let blackKing44 = { red = zero ; black = maskFor 4 4 ; king = maskFor 4 4 ; next = Black }
 let jumpable2 =
   emptyBoard
   |> addChecker 3 3 (Pawn Red)
