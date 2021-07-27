@@ -192,8 +192,11 @@ let rec availableJumps a s c dx dy x y b =
   if not @@ inBounds atX atY then
     a
   else
+    let tryMove = { fromX = x ; fromY = y ; toX = atX ; toY = atY } in
+    let _ = Js.log "check jump" in
+    let _ = Js.log tryMove in
     let nextA =
-      match jumps c { fromX = x ; fromY = y ; toX = atX ; toY = atY } b with
+      match jumps c tryMove b with
       | Some _ -> ((atX,atY) :: a)
       | _ -> a
     in
