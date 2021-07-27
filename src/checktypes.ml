@@ -134,10 +134,6 @@ let jumps c m b =
       , Option.map checkerColor theChecker = Some oc
       )
     in
-    let _ = Js.log "jump?" in
-    let _ = Js.log m in
-    let _ = Js.log s in
-    let _ = Js.log jumpState in
     match jumpState with
     | (true, true , None  , _   ) -> Some a
     | (_   , true , Some _, _   ) -> None
@@ -149,12 +145,14 @@ let jumps c m b =
 
 let forward c dy = if c = Black then dy > 0 else dy < 0
 
+let kingRow = function
+  | Black -> 7
+  | Red -> 0
+
 let nextMove b = { b with next = otherColor b.next }
 
 let move m b =
   let (dx, dy) = direction m in
-  let _ = Js.log "move direction" in
-  let _ = Js.log (dx,dy) in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
   |> Option.filter (fun ch -> b.next = checkerColor ch)
@@ -175,11 +173,18 @@ let move m b =
     )
   |> Option.map
     (fun (checker,jumps) ->
+       let color = checkerColor checker in
+       let promoted =
+         if m.toY = kingRow color then
+           King color
+         else
+           checker
+       in
        jumps
        |> List.fold_left
          (fun b (x,y) -> removeChecker x y b)
          (removeChecker m.fromX m.fromY b)
-       |> addChecker m.toX m.toY checker
+       |> addChecker m.toX m.toY promoted
     )
   |> Option.map nextMove
 
@@ -193,8 +198,6 @@ let rec availableJumps a s c dx dy x y b =
     a
   else
     let tryMove = { fromX = x ; fromY = y ; toX = atX ; toY = atY } in
-    let _ = Js.log "check jump" in
-    let _ = Js.log tryMove in
     let nextA =
       match jumps c tryMove b with
       | Some _ -> ((atX,atY) :: a)

@@ -17,6 +17,12 @@ let init () =
   ; board = board
   }
 
+let win game =
+  if CheckersMoveSet.cardinal game.allowedMoves = 0 then
+    Some (otherColor game.board.next)
+  else
+    None
+
 let click x y game =
   let _ = Js.log "click" in
   let _ = Js.log (x,y) in

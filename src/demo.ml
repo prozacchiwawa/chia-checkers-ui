@@ -70,8 +70,15 @@ let view game =
            (range 0 8 |> List.map (checkersRow y))
       )
   in
+  let heading =
+    Game.win game
+    |> Option.map
+      (fun winner -> div [] [ text "Winner " ; text @@ colorToString winner ])
+    |> Option.default
+      (div [] [ text "Next Move: " ; text @@ colorToString b.next ])
+  in
   div []
-    [ div [] [ text "Next Move: " ; text @@ colorToString b.next ]
+    [ heading
     ; div [class' "checkers-board"] board
     ]
 
