@@ -1,4 +1,5 @@
 open Checktypes
+open Checkmethods
 
 type gameInProgress =
   { selectedChecker : (int * int) option
@@ -74,6 +75,6 @@ let click x y game =
            ; allowedMoves = newMoves
            }
         )
-      |> Option.default rejectGame
+      |> Xoption.default rejectGame
     else
       rejectGame

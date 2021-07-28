@@ -2,5 +2,5 @@
   "name": "checkers",
   "version": "0.1.0",
   "sources": ["src", "tests"],
-  "bs-dependencies": ["@pckilgore/bs-biginteger", "bucklescript-tea"]
+  "bs-dependencies": ["@pckilgore/bs-biginteger", "bucklescript-tea", "chialisp-online"]
 }

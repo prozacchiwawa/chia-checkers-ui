@@ -3,6 +3,7 @@ open Tea.App
 open Tea.Html
 
 open Checktypes
+open Checkmethods
 open Game
 
 let init _ = Game.init ()
@@ -60,7 +61,7 @@ let view game =
            [ innerPart (div [class' (pieceClass ^ " " ^ kingClass)] [])
            ]
       )
-    |> Option.default (div [class' squareClass] [ innerPart (div [] []) ])
+    |> Xoption.default (div [class' squareClass] [ innerPart (div [] []) ])
   in
   let board =
     range 0 8
@@ -74,7 +75,7 @@ let view game =
     Game.win game
     |> Option.map
       (fun winner -> div [] [ text "Winner " ; text @@ colorToString winner ])
-    |> Option.default
+    |> Xoption.default
       (div [] [ text "Next Move: " ; text @@ colorToString b.next ])
   in
   div []
