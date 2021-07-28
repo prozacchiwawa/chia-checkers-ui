@@ -1,8 +1,11 @@
 open Checktypes
+open Clvmcheckers
 open Dsl
 
 let maskFor = function
-  | Point (x,y) -> BigInteger.shiftLeft one (y * 8 + x)
+  | Point (x,y) ->
+    match exec program "maskFor" [Point (x,y)] with
+    | Mask x -> x
 
 let checkerAt x y b =
   let mask = maskFor (Point (x,y)) in

@@ -1,4 +1,5 @@
 open Stringmap
+open Either
 
 open Checktypes
 open Sexp
@@ -26,7 +27,21 @@ and argMaybe
   = AJust of argLabel
   | ANothing
 
-exception Mismatch of (argLabel * argLabel)
+type checkersCompiled =
+  { name : string
+  ; args : string list
+  ; result : argLabel
+  ; code : string
+  }
+
+type checkersProgram = checkersCompiled StringMap.t
+
+exception Failure of string
+
+let rec valueToString = function
+  | CNil -> "()"
+  | CInt i -> BigInteger.toString i ()
+  | CPair (x,y) -> "(" ^ valueToString x ^ " . " ^ valueToString y ^ ")"
 
 let rec convertArg = function
   | Mask i -> CInt i
@@ -85,6 +100,9 @@ let rec convertResSome p r =
     end
   | (AList [x], CNil) ->
     Some (AList [])
+
+  | (Mask _, CNil) -> Some (Mask zero)
+  | (Mask _, CInt x) -> Some (Mask x)
 
   | (MaxSteps _, CInt x) ->
     Some (MaxSteps (BigInteger.toJSNumber x))
@@ -149,17 +167,25 @@ let rec convertResSome p r =
 let convertRes p r =
   match convertResSome p r with
   | Some v -> v
-  | None -> raise Not_found
+  | None -> raise (Failure ("could not convert result " ^ valueToString r))
 
-type checkersFunction =
-  { name : string
-  ; args : string list
-  ; body : string
-  }
-
-type checkersProgram = checkersFunction StringMap.t
+let rec sexpToValue = function
+  | Sexp.Nil _ -> CNil
+  | Sexp.Cons (_,a,b) -> CPair (sexpToValue a, sexpToValue b)
+  | a ->
+    match sexp_to_bigint a with
+    | Some i -> CInt i
+    | None -> CNil
 
 let exec prog fn args =
   let func = StringMap.find fn prog in
-  let cvtargs = List.map convertArg args in
-  Maybe ANothing
+  let cvtargs = convertArg (AList args) in
+  let serialized = valueToString cvtargs in
+  let _ = Js.log serialized in
+  match Clvm.parse_and_run fn func.code serialized with
+  | RunOk res ->
+    let _ = Js.log @@ Sexp.to_string res in
+    convertRes func.result @@ sexpToValue res
+  | RunExn (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ Sexp.to_string e))
+  | RunError (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ e))
+
