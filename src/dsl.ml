@@ -117,7 +117,7 @@ let rec convertResSome p r =
     end
 
   | (Color _, CInt bi) ->
-    if BigInteger.equals bi (`String "749060") then
+    if BigInteger.equals bi (`String "7497060") then
       Some (Color Red)
     else
       Some (Color Black)

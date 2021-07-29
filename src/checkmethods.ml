@@ -2,31 +2,17 @@ open Checktypes
 open Clvmcheckers
 open Dsl
 
-let maskFor = function
-  | Point (x,y) ->
-    match exec program "maskFor" [Point (x,y)] with
-    | Mask x -> x
+let maskFor x y =
+  match exec program "maskFor" [Point (x,y)] with
+  | Mask x -> x
 
 let checkerAt x y b =
-  let mask = maskFor (Point (x,y)) in
-  let kingres =
-    BigInteger.compare (BigInteger.and_ b.king (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  let redres =
-    BigInteger.compare (BigInteger.and_ b.red (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  let blackres =
-    BigInteger.compare (BigInteger.and_ b.black (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  match (kingres,redres,blackres) with
-  | (true, true, _) -> Some (King Red)
-  | (true, _, true) -> Some (King Black)
-  | (_   , true, _) -> Some (Pawn Red)
-  | (_   , _, true) -> Some (Pawn Black)
-  | _ -> None
+  match exec program "checkerAt" [Point (x,y); Board b] with
+  | Maybe (AJust (Checker c)) -> Some c
+  | Maybe ANothing -> None
 
 let removeChecker x y b =
-  let mask = maskFor (Point (x,y)) in
+  let mask = maskFor x y in
   let withKing =
     BigInteger.compare
       (BigInteger.and_ b.king (`BigInt mask)) (`BigInt zero) != EqualTo
@@ -75,7 +61,7 @@ let otherColor = function
   | _ -> Red
 
 let addChecker x y c b =
-  let mask = maskFor (Point (x,y)) in
+  let mask = maskFor x y in
   let color = checkerColor c in
   let king = if isKing c then mask else zero in
   let red = if color = Red then mask else zero in

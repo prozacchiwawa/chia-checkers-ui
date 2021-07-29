@@ -2,11 +2,11 @@ open Checktypes
 open Checkmethods
 
 let red44 =
-  { red = maskFor (Point (4,4)) ; black = zero ; king = zero ; next = Black }
+  { red = maskFor 4 4 ; black = zero ; king = zero ; next = Black }
 let blackKing44 =
   { red = zero
-  ; black = maskFor (Point (4,4))
-  ; king = maskFor (Point (4,4))
+  ; black = maskFor 4 4
+  ; king = maskFor 4 4
   ; next = Black
   }
 let jumpable2 =
