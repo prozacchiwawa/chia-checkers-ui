@@ -12,24 +12,8 @@ let checkerAt x y b =
   | Maybe ANothing -> None
 
 let removeChecker x y b =
-  let mask = maskFor x y in
-  let withKing =
-    BigInteger.compare
-      (BigInteger.and_ b.king (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  let withRed =
-    BigInteger.compare
-      (BigInteger.and_ b.red (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  let withBlack =
-    BigInteger.compare
-      (BigInteger.and_ b.black (`BigInt mask)) (`BigInt zero) != EqualTo
-  in
-  { b with
-    king = BigInteger.xor b.king @@ `BigInt (if withKing then mask else zero)
-  ; red = BigInteger.xor b.red @@ `BigInt (if withRed then mask else zero)
-  ; black = BigInteger.xor b.black @@ `BigInt (if withBlack then mask else zero)
-  }
+  match exec program "removeChecker" [Point (x,y); Board b] with
+  | Board b -> b
 
 let isKing = function
   | King _ -> true
