@@ -104,8 +104,11 @@ let rec convertResSome p r =
   | (Mask _, CNil) -> Some (Mask zero)
   | (Mask _, CInt x) -> Some (Mask x)
 
+  | (MaxSteps _, CNil) -> Some (MaxSteps 0)
   | (MaxSteps _, CInt x) ->
     Some (MaxSteps (BigInteger.toJSNumber x))
+
+  | (Step _, CNil) -> Some (Step 0)
   | (Step _, CInt x) ->
     Some (Step (BigInteger.toJSNumber x))
 

@@ -32,7 +32,7 @@ let compileOpts name =
 
 let program =
   let sources =
-    [ ( "maskFor", ["pt"], Mask zero, "(lsh (- 0 (+ (* 8 (f pt)) (r pt))) 1)")
+    [ ( "maskFor", ["pt"], Mask zero, "(lsh 1 (+ (* 8 (f pt)) (r pt)))")
     ; ( "makeKing", ["color"], Checker (King Red), "(c \"king\" color)")
     ; ( "makePawn", ["color"], Checker (King Red), "(c \"pawn\" color)")
     ; ( "checkerAt1", ["mask"; "(next king red black)"], Checker (King Red),
@@ -46,6 +46,21 @@ let program =
       )
     ; ( "removeChecker", ["pt"; "b"], Board emptyBoard,
         "(removeChecker1 (maskFor pt) b)"
+      )
+    ; ( "isKing", ["checker"], MaxSteps 0,
+        "(= (f checker) \"king\")"
+      )
+    ; ( "inBounds1", ["x"; "y"], MaxSteps 0,
+        "(* (* (+ (> x 0) (= x 0)) (> 8 x)) (* (+ (> y 0) (= y 0)) (> 8 y)))"
+      )
+    ; ( "inBounds", ["pt"], MaxSteps 0,
+        "(inBounds1 (f pt) (r pt))"
+      )
+    ; ( "manhattanDistance1", ["fromX"; "toX"], MaxSteps 0,
+        "(if (> fromX toX) (- fromX toX) (- toX fromX))"
+      )
+    ; ( "manhattanDistance", ["m"], MaxSteps 0,
+        "(manhattanDistance1 (f (f m)) (f (r m)))"
       )
     ]
   in

@@ -6,6 +6,9 @@ all: static/index.js
 clean:
 	rm -rf lib static/index.js
 
+test:
+	node ./lib/js/tests/test.js
+
 $(OBJS): $(SRCS)
 	npm run build
 

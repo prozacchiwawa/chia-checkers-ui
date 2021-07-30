@@ -36,3 +36,5 @@ let zero = BigInteger.bigInt (`Int 0)
 let one = BigInteger.bigInt (`Int 1)
 
 let emptyBoard = { red = zero ; black = zero ; king = zero ; next = Black }
+
+let selfMove = { fromX = 0 ; fromY = 0 ; toX = 0 ; toY = 0 }

@@ -15,13 +15,19 @@ let removeChecker x y b =
   match exec program "removeChecker" [Point (x,y); Board b] with
   | Board b -> b
 
-let isKing = function
-  | King _ -> true
-  | _ -> false
+let isKing c =
+  match exec program "isKing" [Checker c] with
+  | MaxSteps 0 -> false
+  | _ -> true
 
-let inBounds x y = x >= 0 && x < 8 && y >= 0 && y < 8
+let inBounds x y =
+  match exec program "inBounds" [Point (x,y)] with
+  | MaxSteps 0 -> false
+  | _ -> true
 
-let manhattanDistance m = abs (m.toY - m.fromY)
+let manhattanDistance m =
+  match exec program "manhattanDistance" [Move m] with
+  | MaxSteps n -> n
 
 let direction m =
   let run = m.toX - m.fromX in
