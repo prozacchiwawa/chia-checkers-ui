@@ -33,10 +33,10 @@ let compileOpts name =
 let program =
   let sources =
     [ ( "maskFor", ["pt"], Mask zero, "(lsh 1 (+ (* 8 (f pt)) (r pt)))")
-    ; ( "makeKing", ["color"], Checker (King Red), "(c \"king\" color)")
-    ; ( "makePawn", ["color"], Checker (King Red), "(c \"pawn\" color)")
+    ; ( "makeKing", ["color"], Checker (King Red), "(c 1 color)")
+    ; ( "makePawn", ["color"], Checker (King Red), "(c 0 color)")
     ; ( "checkerAt1", ["mask"; "(next king red black)"], Checker (King Red),
-        "(if (logand mask red) (list (if (logand mask king) (makeKing \"red\") (makePawn \"red\"))) (if (logand mask black) (list (if (logand mask king) (makeKing \"black\") (makePawn \"black\"))) (quote ())))"
+        "(if (logand mask red) (list (if (logand mask king) (makeKing 0) (makePawn 0))) (if (logand mask black) (list (if (logand mask king) (makeKing 1) (makePawn 1))) (quote ())))"
       )
     ; ( "checkerAt", ["pt"; "b"], Maybe (AJust (Checker (King Red))),
         "(checkerAt1 (maskFor pt) b)"
@@ -48,7 +48,7 @@ let program =
         "(removeChecker1 (maskFor pt) b)"
       )
     ; ( "isKing", ["checker"], MaxSteps 0,
-        "(= (f checker) \"king\")"
+        "(= (f checker) 1)"
       )
     ; ( "inBounds1", ["x"; "y"], MaxSteps 0,
         "(* (* (+ (> x 0) (= x 0)) (> 8 x)) (* (+ (> y 0) (= y 0)) (> 8 y)))"
@@ -62,6 +62,53 @@ let program =
     ; ( "manhattanDistance", ["m"], MaxSteps 0,
         "(manhattanDistance1 (f (f m)) (f (r m)))"
       )
+    ; ( "abs", ["s"], MaxSteps 0,
+        "(if (> s 0) s (- 0 s))"
+      )
+    ; ( "direction1", ["fromX"; "fromY"; "toX"; "toY"], Point (0,0),
+        "(c (- toX fromX) (- toY fromY))"
+      )
+    ; ( "direction", ["m"], Point (0,0),
+        "(direction1 (f (f m)) (r (f m)) (f (r m)) (r (r m)))"
+      )
+    ; ( "validDiagonal3", ["rr"], MaxSteps 0,
+        "(= (f rr) (r rr))"
+      )
+    ; ( "validDiagonal2", ["m"], MaxSteps 0,
+        "(validDiagonal3 (direction m))"
+      )
+    ; ( "validDiagonal1", ["m" ; "fromX" ; "fromY" ; "toX" ; "toY"], MaxSteps 0,
+        "(if (+ (= fromX toX) (= fromY toY)) () (validDiagonal2 m))"
+      )
+    ; ( "validDiagonal", ["m"], MaxSteps 0,
+        "(validDiagonal1 m (f (f m)) (r (f m)) (f (r m)) (r (r m)))"
+      )
+    ; ( "checkerColor", ["ch"], Color Red,
+        "(r ch)"
+      )
+    ; ( "otherColor", ["color"], Color Red,
+        "(if (= color 0) 1 0)"
+      )
+(*
+    ; ( "board$next", ["b"], Color Red,
+        "(f b)"
+      )
+    ; ( "board$king", ["b"], Mask zero,
+        "(f (r b))"
+      )
+    ; ( "board$red", ["b"], Mask zero,
+        "(f (r (r b)))"
+      )
+    ; ( "board$black", ["b"], Mask zero,
+        "(f (r (r (r b))))"
+      )
+    ; ( "addChecker2", ["b"; "king"; "red"; "black"], Board emptyBoard,
+        "(list (board$next b) (logor king (board$king b)) (logor red (board$red b)) (logor black (board$black b)))"
+      )
+    ; ( "addChecker1", ["b"; "mask"; "c"; 
+    ; ( "addChecker", ["pt"; "c"; "b"], Board emptyBoard,
+        "(addChecker1 b ("
+   *)
     ]
   in
   let progbody =

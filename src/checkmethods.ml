@@ -30,25 +30,22 @@ let manhattanDistance m =
   | MaxSteps n -> n
 
 let direction m =
-  let run = m.toX - m.fromX in
-  let rise = m.toY - m.fromY in
-  (run, rise)
+  match exec program "direction" [Move m] with
+  | Point p -> p
 
 (* Requires either a slope of 1 or -1 *)
 let validDiagonal m =
-  if m.fromX == m.toX || m.fromY == m.toY then
-    false
-  else
-    let (run, rise) = direction m in
-    abs rise == abs run
+  match exec program "validDiagonal" [Move m] with
+  | MaxSteps 0 -> false
+  | _ -> true
 
-let checkerColor = function
-  | King c -> c
-  | Pawn c -> c
+let checkerColor ch =
+  match exec program "checkerColor" [Checker ch] with
+  | Color c -> c
 
-let otherColor = function
-  | Red -> Black
-  | _ -> Red
+let otherColor c =
+  match exec program "otherColor" [Color c] with
+  | Color c -> c
 
 let addChecker x y c b =
   let mask = maskFor x y in

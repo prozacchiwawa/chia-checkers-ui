@@ -7,8 +7,7 @@ open Clvm
 open Compiler
 
 type value
-  = CNil
-  | CInt of BigInteger.t
+  = CInt of BigInteger.t
   | CPair of value * value
 
 type argLabel
@@ -39,7 +38,6 @@ type checkersProgram = checkersCompiled StringMap.t
 exception Failure of string
 
 let rec valueToString = function
-  | CNil -> "()"
   | CInt i -> BigInteger.toString i ()
   | CPair (x,y) -> "(" ^ valueToString x ^ " . " ^ valueToString y ^ ")"
 
@@ -48,12 +46,12 @@ let rec convertArg = function
   | MaxSteps i -> CInt (BigInteger.bigInt @@ `Int i)
   | Step s -> CInt (BigInteger.bigInt @@ `Int s)
   | Point (x,y) -> CPair (CInt (BigInteger.bigInt @@ `Int x), CInt (BigInteger.bigInt @@ `Int y))
-  | Color Red -> CInt (BigInteger.bigInt @@ `String "749060")
-  | Color Black -> CInt (BigInteger.bigInt @@ `String "422725116779")
+  | Color Red -> CInt zero
+  | Color Black -> CInt one
   | Checker (Pawn color) ->
-    CPair (CInt (BigInteger.bigInt @@ `String "1802071655"), convertArg (Color color))
+    CPair (CInt zero, convertArg (Color color))
   | Checker (King color) ->
-    CPair (CInt (BigInteger.bigInt @@ `String "1885435758"), convertArg (Color color))
+    CPair (CInt one, convertArg (Color color))
   | Move m ->
     CPair
       ( convertArg (Point (m.fromX, m.fromY))
@@ -68,27 +66,27 @@ let rec convertArg = function
               ( CInt b.red
               , CPair
                   ( CInt b.black
-                  , CNil
+                  , CInt zero
                   )
               )
           )
       )
 
-  | Maybe (AJust v) -> CPair (convertArg v, CNil)
-  | Maybe (ANothing) -> CNil
+  | Maybe (AJust v) -> CPair (convertArg v, CInt zero)
+  | Maybe (ANothing) -> CInt zero
 
-  | AList [] -> CNil
+  | AList [] -> CInt zero
   | AList (hd :: tl) -> CPair (convertArg hd, convertArg (AList tl))
 
 let rec convertResSome p r =
   match (p,r) with
-  | (Maybe (AJust v), CPair (x, CNil)) ->
+  | (Maybe (AJust v), CPair (x, CInt zero)) ->
     begin
       match convertResSome v x with
       | Some u -> Some (Maybe (AJust u))
       | _ -> None
     end
-  | (Maybe (AJust v), CNil) ->
+  | (Maybe (AJust v), CInt zero) ->
     Some (Maybe ANothing)
 
   | (AList [pat], CPair (x, next)) ->
@@ -98,17 +96,14 @@ let rec convertResSome p r =
         Some (AList (head :: rest))
       | _ -> None
     end
-  | (AList [x], CNil) ->
+  | (AList [x], CInt zero) ->
     Some (AList [])
 
-  | (Mask _, CNil) -> Some (Mask zero)
   | (Mask _, CInt x) -> Some (Mask x)
 
-  | (MaxSteps _, CNil) -> Some (MaxSteps 0)
   | (MaxSteps _, CInt x) ->
     Some (MaxSteps (BigInteger.toJSNumber x))
 
-  | (Step _, CNil) -> Some (Step 0)
   | (Step _, CInt x) ->
     Some (Step (BigInteger.toJSNumber x))
 
@@ -120,7 +115,7 @@ let rec convertResSome p r =
     end
 
   | (Color _, CInt bi) ->
-    if BigInteger.equals bi (`String "7497060") then
+    if BigInteger.equals bi (`BigInt zero) then
       Some (Color Red)
     else
       Some (Color Black)
@@ -129,10 +124,10 @@ let rec convertResSome p r =
     begin
       match convertResSome (Color Red) color with
       | Some (Color color) ->
-        if BigInteger.equals kind (`String "1802071655") then
-          Some (Checker (King color))
-        else
+        if BigInteger.equals kind (`BigInt zero) then
           Some (Checker (Pawn color))
+        else
+          Some (Checker (King color))
       | _ -> None
     end
 
@@ -151,14 +146,14 @@ let rec convertResSome p r =
             ( CInt king
             , CPair
                 ( CInt red
-                , CPair (CInt black, CNil)
+                , CPair (CInt black, CInt zero)
                 )
             )
         )
     ) ->
     Some
       (Board
-         { next = if BigInteger.equals color (`String "749060") then Red else Black
+         { next = if BigInteger.equals color (`BigInt zero) then Red else Black
          ; king = king
          ; red = red
          ; black = black
@@ -173,21 +168,21 @@ let convertRes p r =
   | None -> raise (Failure ("could not convert result " ^ valueToString r))
 
 let rec sexpToValue = function
-  | Sexp.Nil _ -> CNil
+  | Sexp.Nil _ -> CInt zero
   | Sexp.Cons (_,a,b) -> CPair (sexpToValue a, sexpToValue b)
   | a ->
     match sexp_to_bigint a with
     | Some i -> CInt i
-    | None -> CNil
+    | None -> CInt zero
 
 let exec prog fn args =
   let func = StringMap.find fn prog in
   let cvtargs = convertArg (AList args) in
   let serialized = valueToString cvtargs in
-  let _ = Js.log serialized in
+  let _ = Js.log @@ "run " ^ func.name ^ " with " ^ serialized in
   match Clvm.parse_and_run fn func.code serialized with
   | RunOk res ->
-    let _ = Js.log @@ Sexp.to_string res in
+    let _ = Js.log @@ "result " ^ func.name ^ " was " ^ Sexp.to_string res in
     convertRes func.result @@ sexpToValue res
   | RunExn (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ Sexp.to_string e))
   | RunError (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ e))
