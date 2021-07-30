@@ -48,16 +48,8 @@ let otherColor c =
   | Color c -> c
 
 let addChecker x y c b =
-  let mask = maskFor x y in
-  let color = checkerColor c in
-  let king = if isKing c then mask else zero in
-  let red = if color = Red then mask else zero in
-  let black = if color = Black then mask else zero in
-  { b with
-    king = BigInteger.or_ b.king @@ `BigInt king
-  ; red = BigInteger.or_ b.red @@ `BigInt red
-  ; black = BigInteger.or_ b.black @@ `BigInt black
-  }
+  match exec program "addChecker" [Point (x,y); Checker c; Board b] with
+  | Board b -> b
 
 let jumps c m b =
   let oc = otherColor c in

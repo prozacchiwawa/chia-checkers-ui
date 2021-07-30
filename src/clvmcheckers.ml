@@ -89,7 +89,6 @@ let program =
     ; ( "otherColor", ["color"], Color Red,
         "(if (= color 0) 1 0)"
       )
-(*
     ; ( "board$next", ["b"], Color Red,
         "(f b)"
       )
@@ -102,13 +101,15 @@ let program =
     ; ( "board$black", ["b"], Mask zero,
         "(f (r (r (r b))))"
       )
-    ; ( "addChecker2", ["b"; "king"; "red"; "black"], Board emptyBoard,
-        "(list (board$next b) (logor king (board$king b)) (logor red (board$red b)) (logor black (board$black b)))"
+    ; ( "addChecker2", ["king"; "red"; "black"; "b"], Board emptyBoard,
+        "(list (board$next b) (logior king (board$king b)) (logior red (board$red b)) (logior black (board$black b)))"
       )
-    ; ( "addChecker1", ["b"; "mask"; "c"; 
-    ; ( "addChecker", ["pt"; "c"; "b"], Board emptyBoard,
-        "(addChecker1 b ("
-   *)
+    ; ( "addChecker1", ["mask"; "ch"; "b"], Board emptyBoard,
+        "(addChecker2 (if (isKing ch) mask 0) (if (checkerColor ch) 0 mask) (if (checkerColor ch) mask 0) b)"
+      )
+    ; ( "addChecker", ["pt"; "ch"; "b"], Board emptyBoard,
+        "(addChecker1 (maskFor pt) ch b)"
+      )
     ]
   in
   let progbody =
