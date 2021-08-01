@@ -171,6 +171,9 @@ let program =
     ; ( "kingRow", ["color"], MaxSteps 0,
         "(i color 7 0)"
       )
+    ; ( "nextMove", ["b"], Board emptyBoard,
+        "(list (otherColor (board$next b)) (board$king b) (board$red b) (board$black b))"
+      )
     ]
   in
   let progbody =

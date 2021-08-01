@@ -66,7 +66,9 @@ let kingRow c =
   match exec program "kingRow" [Color c] with
   | MaxSteps n -> n
 
-let nextMove b = { b with next = otherColor b.next }
+let nextMove b =
+  match exec program "nextMove" [Board b] with
+  | Board b -> b
 
 let move m b =
   let (dx, dy) = direction m in
