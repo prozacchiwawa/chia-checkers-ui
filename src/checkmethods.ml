@@ -62,9 +62,9 @@ let forward c dy =
   | MaxSteps 0 -> false
   | _ -> true
 
-let kingRow = function
-  | Black -> 7
-  | Red -> 0
+let kingRow c =
+  match exec program "kingRow" [Color c] with
+  | MaxSteps n -> n
 
 let nextMove b = { b with next = otherColor b.next }
 

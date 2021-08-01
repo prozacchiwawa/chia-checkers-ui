@@ -168,6 +168,9 @@ let program =
     ; ( "forward", ["color"; "dy"], MaxSteps 0,
         "(i color (> dy 0) (> 0 dy))"
       )
+    ; ( "kingRow", ["color"], MaxSteps 0,
+        "(i color 7 0)"
+      )
     ]
   in
   let progbody =
