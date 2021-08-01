@@ -149,24 +149,14 @@ let availableMovesForChecker c x y b =
     ]
 
 let rec listCheckersWithColor n c b =
-  if n >= 64 then
-    []
-  else
-    let x = n mod 8 in
-    let y = n / 8 in
-    let chq = checkerAt x y b in
-    let rest = listCheckersWithColor (n+1) c b in
-    let head =
-      match chq with
-      | Some (King pc) -> if pc = c then [(x,y,King c)] else []
-      | Some (Pawn pc) -> if pc = c then [(x,y,Pawn c)] else []
-      | _ -> []
-    in
-    List.concat [head ; rest]
-
-let colorToString = function
-  | Red -> "red"
-  | Black -> "black"
+  match exec program "listCheckersWithColor" [Step n; Color c; Board b] with
+  | AList l ->
+    List.map
+      (function
+        | APair (Point (x,y), Checker c) ->
+          (x,y,c)
+      )
+      l
 
 let availableMoves b =
   let withColor = listCheckersWithColor 0 b.next b in
@@ -178,6 +168,10 @@ let availableMoves b =
          (fun (nx,ny) -> { fromX = x ; fromY = y; toX = nx ; toY = ny })
     )
   |> List.concat
+
+let colorToString = function
+  | Red -> "red"
+  | Black -> "black"
 
 let standardBoard =
   [ (0,0,Black)

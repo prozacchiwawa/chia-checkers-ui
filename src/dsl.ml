@@ -19,6 +19,7 @@ type argLabel
   | Checker of checker
   | Move of checkersMove
   | Board of checkersBoard
+  | APair of (argLabel * argLabel)
   | Maybe of argMaybe
   | AList of argLabel list
 
@@ -72,6 +73,8 @@ let rec convertArg = function
           )
       )
 
+  | APair (a,b) -> CPair (convertArg a, convertArg b)
+
   | Maybe (AJust v) -> CPair (convertArg v, CInt zero)
   | Maybe (ANothing) -> CInt zero
 
@@ -98,6 +101,13 @@ let rec convertResSome p r =
     end
   | (AList [x], CInt zero) ->
     Some (AList [])
+
+  | (APair (a,b), CPair (av,bv)) ->
+    begin
+      match (convertResSome a av, convertResSome b bv) with
+      | (Some ar, Some br) -> Some (APair (ar, br))
+      | _ -> None
+    end
 
   | (Mask _, CInt x) -> Some (Mask x)
 

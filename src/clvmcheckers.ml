@@ -183,6 +183,21 @@ let program =
     ; ( "availableJumps", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"], AList [Point (0,0)],
         "(availableJumps1 a s color dx dy x y b (+ x (* s dx)) (+ y (* s dy)))"
       )
+    ; ( "moddiv1", ["res"], MaxSteps 0,
+        "(c (r res) (f res))"
+      )
+    ; ( "moddiv", ["n";"d"], MaxSteps 0,
+        "(moddiv1 (divmod n d))"
+      )
+    ; ( "listCheckersWithColor2", ["head"; "rest"], AList [APair (Point (0,0), Checker (King Red))],
+        "(if head (c head rest) rest)"
+      )
+    ; ( "listCheckersWithColor1", ["n"; "color"; "b"; "chq"], AList [APair (Point (0,0), Checker (King Red))],
+        "(listCheckersWithColor2 (if chq (if (= (colorOfMaybeChecker chq) (just color)) (c (moddiv n 8) (fromJust chq)) ()) ()) (listCheckersWithColor (+ n 1) color b))"
+      )
+    ; ( "listCheckersWithColor", ["n"; "color"; "b"], AList [APair (Point (0,0), Checker (King Red))],
+        "(if (> n 63) () (listCheckersWithColor1 n color b (checkerAt (moddiv n 8) b)))"
+      )
     ]
   in
   let progbody =
