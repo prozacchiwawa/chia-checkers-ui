@@ -174,6 +174,15 @@ let program =
     ; ( "nextMove", ["b"], Board emptyBoard,
         "(list (otherColor (board$next b)) (board$king b) (board$red b) (board$black b))"
       )
+    ; ( "availableJumps2", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"; "atX"; "atY"; "jlist"], AList [Point (0,0)],
+        "(availableJumps (if jlist (c (c atX atY) a) a) (+ s 2) color dx dy x y b)"
+      )
+    ; ( "availableJumps1", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"; "atX"; "atY"], AList [Point (0,0)],
+        "(if (inBounds (c atX atY)) (availableJumps2 a s color dx dy x y b atX atY (jumps color (c (c x y) (c atX atY)) b)) a)"
+      )
+    ; ( "availableJumps", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"], AList [Point (0,0)],
+        "(availableJumps1 a s color dx dy x y b (+ x (* s dx)) (+ y (* s dy)))"
+      )
     ]
   in
   let progbody =

@@ -111,18 +111,13 @@ let move m b =
  * detects that it's a valid jump
  *)
 let rec availableJumps a s c dx dy x y b =
-  let atX = s * dx + x in
-  let atY = s * dy + y in
-  if not @@ inBounds atX atY then
-    a
-  else
-    let tryMove = { fromX = x ; fromY = y ; toX = atX ; toY = atY } in
-    let nextA =
-      match jumps c tryMove b with
-      | Some _ -> ((atX,atY) :: a)
-      | _ -> a
-    in
-    availableJumps nextA (s + 2) c dx dy x y b
+  match exec program "availableJumps" [AList (List.map (fun p -> Point p) a); Step s; Color c; Step dx; Step dy; Step x; Step y; Board b] with
+  | AList l ->
+    List.map
+      (function
+        | Point p -> p
+      )
+      l
 
 let availableMovesForChecker c x y b =
   let allOneSpaceMoves = [(-1,1);(-1,-1);(1,1);(1,-1)] in
