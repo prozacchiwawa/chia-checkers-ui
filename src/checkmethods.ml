@@ -52,28 +52,10 @@ let addChecker x y c b =
   | Board b -> b
 
 let jumps c m b =
-  let oc = otherColor c in
-  let (dx, dy) = direction m in
-  let steps = manhattanDistance m in
-  let rec next_jump_ a s =
-    let atX = m.fromX + (dx / steps) * s in
-    let atY = m.fromY + (dy / steps) * s in
-    let theChecker = checkerAt atX atY b in
-    let jumpState =
-      ( s = steps
-      , s mod 2 = 0
-      , theChecker
-      , Option.map checkerColor theChecker = Some oc
-      )
-    in
-    match jumpState with
-    | (true, true , None  , _   ) -> Some a
-    | (_   , true , Some _, _   ) -> None
-    | (_   , false, _     , true) -> next_jump_ ((atX,atY) :: a) (s + 1)
-    | (_   , true , None  , _   ) -> next_jump_ a (s + 1)
-    | _                           -> None
-  in
-  next_jump_ [] 1 |> Option.map PointSet.of_list
+  match exec program "jumps" [Color c; Move m; Board b] with
+  | Maybe (AJust (AList l)) ->
+    Some (List.map (fun (Point (x,y)) -> (x,y)) l |> PointSet.of_list)
+  | Maybe _ -> None
 
 let forward c dy = if c = Black then dy > 0 else dy < 0
 

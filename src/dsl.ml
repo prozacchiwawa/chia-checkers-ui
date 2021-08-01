@@ -175,14 +175,26 @@ let rec sexpToValue = function
     | Some i -> CInt i
     | None -> CInt zero
 
+let verbose = StringSet.of_list ["jumps"]
+
 let exec prog fn args =
   let func = StringMap.find fn prog in
   let cvtargs = convertArg (AList args) in
   let serialized = valueToString cvtargs in
-  let _ = Js.log @@ "run " ^ func.name ^ " with " ^ serialized in
+  let _ =
+    if StringSet.mem func.name verbose then
+      Js.log @@ "run " ^ func.name ^ " with " ^ serialized
+    else
+      ()
+  in
   match Clvm.parse_and_run fn func.code serialized with
   | RunOk res ->
-    let _ = Js.log @@ "result " ^ func.name ^ " was " ^ Sexp.to_string res in
+    let _ =
+      if StringSet.mem func.name verbose then
+        Js.log @@ "result " ^ func.name ^ " was " ^ Sexp.to_string res
+      else
+        ()
+    in
     convertRes func.result @@ sexpToValue res
   | RunExn (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ Sexp.to_string e))
   | RunError (l,e) -> raise (Failure (Srcloc.toString l ^ ": " ^ e))

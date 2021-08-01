@@ -24,6 +24,7 @@ module PointOrd = struct
 end
 
 module PointSet = Set.Make(PointOrd)
+module StringSet = Set.Make(String)
 
 module CheckersMoveOrd = struct
   type t = checkersMove

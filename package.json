@@ -19,6 +19,6 @@
     "@pckilgore/bs-biginteger": "^1.0.1",
     "big-integer": "^1.6.48",
     "bucklescript-tea": "^0.15.0",
-    "chialisp-online": "prozacchiwawa/ochialisp#v0.8.1"
+    "chialisp-online": "prozacchiwawa/ochialisp#v0.8.2"
   }
 }

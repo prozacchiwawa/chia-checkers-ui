@@ -32,9 +32,22 @@ let compileOpts name =
 
 let program =
   let sources =
-    [ ( "maskFor", ["pt"], Mask zero, "(lsh 1 (+ (* 8 (f pt)) (r pt)))")
+    [ ( "label", ["_"; "actually"], MaxSteps 0, "actually")
+    ; ( "maskFor", ["pt"], Mask zero, "(lsh 1 (+ (* 8 (f pt)) (r pt)))")
     ; ( "makeKing", ["color"], Checker (King Red), "(c 1 color)")
     ; ( "makePawn", ["color"], Checker (King Red), "(c 0 color)")
+    ; ( "m$fromX", ["m"], MaxSteps 0,
+        "(f (f m))"
+      )
+    ; ( "m$fromY", ["m"], MaxSteps 0,
+        "(r (f m))"
+      )
+    ; ( "m$toX", ["m"], MaxSteps 0,
+        "(f (r m))"
+      )
+    ; ( "m$toY", ["m"], MaxSteps 0,
+        "(r (r m))"
+      )
     ; ( "checkerAt1", ["mask"; "(next king red black)"], Checker (King Red),
         "(if (logand mask red) (list (if (logand mask king) (makeKing 0) (makePawn 0))) (if (logand mask black) (list (if (logand mask king) (makeKing 1) (makePawn 1))) (quote ())))"
       )
@@ -56,11 +69,8 @@ let program =
     ; ( "inBounds", ["pt"], MaxSteps 0,
         "(inBounds1 (f pt) (r pt))"
       )
-    ; ( "manhattanDistance1", ["fromX"; "toX"], MaxSteps 0,
-        "(if (> fromX toX) (- fromX toX) (- toX fromX))"
-      )
     ; ( "manhattanDistance", ["m"], MaxSteps 0,
-        "(manhattanDistance1 (f (f m)) (f (r m)))"
+        "(abs (- (m$fromX m) (m$toX m)))"
       )
     ; ( "abs", ["s"], MaxSteps 0,
         "(if (> s 0) s (- 0 s))"
@@ -69,19 +79,19 @@ let program =
         "(c (- toX fromX) (- toY fromY))"
       )
     ; ( "direction", ["m"], Point (0,0),
-        "(direction1 (f (f m)) (r (f m)) (f (r m)) (r (r m)))"
+        "(c (- (m$toX m) (m$fromX m)) (- (m$toY m) (m$fromY m)))"
       )
-    ; ( "validDiagonal3", ["rr"], MaxSteps 0,
-        "(= (f rr) (r rr))"
+    ; ( "validDiagonal3", ["dir"], MaxSteps 0,
+        "(= (abs (f dir)) (abs (r dir)))"
       )
     ; ( "validDiagonal2", ["m"], MaxSteps 0,
         "(validDiagonal3 (direction m))"
       )
-    ; ( "validDiagonal1", ["m" ; "fromX" ; "fromY" ; "toX" ; "toY"], MaxSteps 0,
-        "(if (+ (= fromX toX) (= fromY toY)) () (validDiagonal2 m))"
+    ; ( "validDiagonal1", ["m"], MaxSteps 0,
+        "(if (+ (= (m$fromX m) (m$toX m)) (= (m$fromY m) (m$toY m))) () (validDiagonal2 m))"
       )
     ; ( "validDiagonal", ["m"], MaxSteps 0,
-        "(validDiagonal1 m (f (f m)) (r (f m)) (f (r m)) (r (r m)))"
+        "(validDiagonal1 m)"
       )
     ; ( "checkerColor", ["ch"], Color Red,
         "(r ch)"
@@ -109,6 +119,51 @@ let program =
       )
     ; ( "addChecker", ["pt"; "ch"; "b"], Board emptyBoard,
         "(addChecker1 (maskFor pt) ch b)"
+      )
+    ; ( "fromJust", ["mObj"], MaxSteps 0,
+        "(f mObj)"
+      )
+    ; ( "just", ["obj"], MaxSteps 0,
+        "(list obj)"
+      )
+    ; ( "colorOfMaybeChecker", ["mCh"], Maybe (AJust (Color Red)),
+        "(if mCh (just (checkerColor (fromJust mCh))) ())"
+      )
+    ; ( "jumpState$sEqSteps", ["js"], MaxSteps 0,
+        "(f js)"
+      )
+    ; ( "jumpState$sMod2Eq0", ["js"], MaxSteps 0,
+        "(f (r js))"
+      )
+    ; ( "jumpState$theChecker", ["js"], Maybe (AJust (Checker (King Red))),
+        "(f (r (r js)))"
+      )
+    ; ( "jumpState$otherColor", ["js"], Color Red,
+        "(f (r (r (r js))))"
+      )
+    ; ( "jumpAtCoords0", ["fromX"; "fromY"; "dx"; "dy"; "steps"; "s"], Point (0,0),
+        "(c (+ fromX (* s (/ dx steps))) (+ fromY (* s (/ dy steps))))"
+      )
+    ; ( "jumpAtCoords", ["fromX"; "fromY"; "dir"; "steps"; "s"], Point (0,0),
+        "(jumpAtCoords0 fromX fromY (f dir) (r dir) steps s)"
+      )
+    ; ( "newJumpState2", ["oc"; "sEqSteps"; "sMod2Eq0"; "theChecker"], MaxSteps 0,
+        "(list sEqSteps sMod2Eq0 theChecker (= (colorOfMaybeChecker theChecker) (just oc)))"
+      )
+    ; ( "newJumpState1", ["oc"; "steps"; "jcoord"; "b"; "s"], MaxSteps 0,
+        "(newJumpState2 oc (= steps s) (not (r (divmod s 2))) (checkerAt jcoord b))"
+      )
+    ; ( "newJumpState", ["oc"; "steps"; "m"; "b"; "s"], MaxSteps 0,
+        "(newJumpState1 oc steps (jumpAtCoords (m$fromX m) (m$fromY m) (direction m) steps s) b s)"
+      )
+    ; ( "jumpsNextStep", ["steps"; "color"; "m"; "b"; "a"; "s"; "js"], Maybe (AJust (AList [Point (0,0)])),
+        "(if (label \"true true None _\" (* (* (jumpState$sEqSteps js) (jumpState$sMod2Eq0 js)) (not (jumpState$theChecker js)))) (just a) (if (label \"_ true Some _\" (* (jumpState$sMod2Eq0 js) (not (not (jumpState$theChecker js))))) () (if (label \"_ false _ true\" (* (not (jumpState$sMod2Eq0 js)) (jumpState$otherColor js))) (nextJump1 steps color m b (c (jumpAtCoords (m$fromX m) (m$fromY m) (direction m) steps s) a) (+ s 1)) (if (label \"_ true None _\" (* (not (jumpState$sMod2Eq0 js)) (jumpState$otherColor js))) (nextJump1 steps color m b a (+ s 1)) ()))))"
+      )
+    ; ( "nextJump1", ["steps"; "color"; "m"; "b"; "a"; "s"], Maybe (AJust (AList [Point (0,0)])),
+        "(jumpsNextStep steps color m b a s (newJumpState (otherColor color) steps m b s))"
+      )
+    ; ( "jumps", ["color"; "m"; "b"], Maybe (AJust (AList [Point (0,0)])),
+        "(nextJump1 (manhattanDistance m) color m b () 1)"
       )
     ]
   in
