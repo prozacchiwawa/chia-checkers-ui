@@ -57,7 +57,10 @@ let jumps c m b =
     Some (List.map (fun (Point (x,y)) -> (x,y)) l |> PointSet.of_list)
   | Maybe _ -> None
 
-let forward c dy = if c = Black then dy > 0 else dy < 0
+let forward c dy =
+  match exec program "forward" [Color c;Step dy] with
+  | MaxSteps 0 -> false
+  | _ -> true
 
 let kingRow = function
   | Black -> 7

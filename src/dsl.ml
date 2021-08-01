@@ -175,7 +175,7 @@ let rec sexpToValue = function
     | Some i -> CInt i
     | None -> CInt zero
 
-let verbose = StringSet.of_list ["jumps"]
+let verbose = StringSet.of_list ["forward"]
 
 let exec prog fn args =
   let func = StringMap.find fn prog in

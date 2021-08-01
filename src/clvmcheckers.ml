@@ -165,6 +165,9 @@ let program =
     ; ( "jumps", ["color"; "m"; "b"], Maybe (AJust (AList [Point (0,0)])),
         "(nextJump1 (manhattanDistance m) color m b () 1)"
       )
+    ; ( "forward", ["color"; "dy"], MaxSteps 0,
+        "(i color (> dy 0) (> 0 dy))"
+      )
     ]
   in
   let progbody =
