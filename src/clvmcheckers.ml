@@ -198,6 +198,45 @@ let program =
     ; ( "listCheckersWithColor", ["n"; "color"; "b"], AList [APair (Point (0,0), Checker (King Red))],
         "(if (> n 63) () (listCheckersWithColor1 n color b (checkerAt (moddiv n 8) b)))"
       )
+    ; ( "filterIsForwardMove", ["color"; "l"], MaxSteps 0,
+        "(if l (if (forward color (r (f l))) (c (f l) (filterIsForwardMove color (r l))) (filterIsForwardMove color (r l))) ())"
+      )
+    ; ( "oneSpaceMovesRaw1", ["checker"; "allOneSpaceMoves"], AList [Point (0,0)],
+        "(if (isKing checker) allOneSpaceMoves (filterIsForwardMove (checkerColor checker) allOneSpaceMoves))"
+      )
+    ; ( "oneSpaceMovesRaw", ["checker"], AList [Point (0,0)],
+        "(oneSpaceMovesRaw1 checker (list (c -1 1) (c -1 -1) (c 1 1) (c 1 -1)))"
+      )
+    ; ( "oneSpaceMovesInBounds1", ["pt"; "l"; "dx"; "dy"], AList [Point (0,0)],
+        "(if (inBounds (c (+ dx (f pt)) (+ dy (r pt)))) (c (f l) (oneSpaceMovesInBounds pt (r l))) (oneSpaceMovesInBounds pt (r l)))"
+      )
+    ; ( "oneSpaceMovesInBounds", ["pt";"l"], AList [Point (0,0)],
+        "(if l (oneSpaceMovesInBounds1 pt l (f (f l)) (r (f l))) ())"
+      )
+    ; ( "oneSpaceMovesNotBlocked1", ["pt"; "b"; "l"; "dx"; "dy"], AList [Point (0,0)],
+        "(if (checkerAt (c (+ dx (f pt)) (+ dy (r pt))) b) (oneSpaceMovesNotBlocked pt b (r l)) (c (f l) (oneSpaceMovesNotBlocked pt b (r l))))"
+      )
+    ; ( "oneSpaceMovesNotBlocked", ["pt"; "b"; "l"], AList [Point (0,0)],
+        "(if l (oneSpaceMovesNotBlocked1 pt b l (f (f l)) (r (f l))) ())"
+      )
+    ; ( "concat", ["l1"], AList [Step 0],
+        "(if l1 (if (f l1) (c (f (f l1)) (concat (c (r (f l1)) (r l1)))) (concat (r l1))) ())"
+      )
+    ; ( "mapToAvailableJumps", ["color"; "pt"; "b"; "l"], AList [Point (0,0)],
+        "(if l (c (availableJumps () 2 color (f (f l)) (r (f l)) (f pt) (r pt) b)) (mapToAvailableJumps color pt b (r l)))"
+      )
+    ; ( "allowedJumps", ["color"; "pt"; "b"; "l"], AList [Point (0,0)],
+        "()" (* "(concat (mapToAvailableJumps color pt b l))" *)
+      )
+    ; ( "availableMovesForChecker1", ["ch";"pt";"b";"movesInBounds"], AList [Point (0,0)],
+        "(concat (list (allowedJumps (checkerColor ch) pt b movesInBounds) (oneSpaceMovesNotBlocked pt b movesInBounds)))"
+      )
+    ; ( "offsetPoints", ["pt"; "l"], AList [Point (0,0)],
+        "(if l (c (c (+ (f pt) (f (f l))) (+ (r pt) (r (f l)))) (offsetPoints pt (r l))) ())"
+      )
+    ; ( "availableMovesForChecker", ["ch";"pt";"b"], AList [Point (0,0)],
+        "(availableMovesForChecker1 ch pt b (offsetPoints pt (oneSpaceMovesInBounds pt (oneSpaceMovesRaw ch pt b))))"
+      )
     ]
   in
   let progbody =
