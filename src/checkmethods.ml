@@ -110,7 +110,7 @@ let move m b =
 (* For some direction dx, dy, check each possible jump to see if jumps
  * detects that it's a valid jump
  *)
-let rec availableJumps a s c dx dy x y b =
+let availableJumps a s c dx dy x y b =
   match exec program "availableJumps" [AList (List.map (fun p -> Point p) a); Step s; Color c; Step dx; Step dy; Step x; Step y; Board b] with
   | AList l ->
     List.map
@@ -156,6 +156,11 @@ let oneSpaceMovesNotBlocked pt b l =
       )
       l
 
+let allowedJumps c (x,y) b l =
+  l
+  |> List.map (fun (dx,dy) -> availableJumps [] 2 c dx dy x y b)
+  |> List.concat
+
 let availableMovesForChecker c x y b =
   let allowedOneSpaceMoves =
     oneSpaceMovesRaw c
@@ -163,8 +168,7 @@ let availableMovesForChecker c x y b =
   in
   let jumps =
     allowedOneSpaceMoves
-    |> List.map (fun (dx,dy) -> availableJumps [] 2 (checkerColor c) dx dy x y b)
-    |> List.concat
+    |> allowedJumps (checkerColor c) (x,y) b
   in
   List.concat
     [ jumps

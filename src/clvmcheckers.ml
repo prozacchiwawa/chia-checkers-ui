@@ -63,11 +63,8 @@ let program =
     ; ( "isKing", ["checker"], MaxSteps 0,
         "(= (f checker) 1)"
       )
-    ; ( "inBounds1", ["x"; "y"], MaxSteps 0,
+    ; ( "inBounds", ["x"; "y"], MaxSteps 0,
         "(* (* (+ (> x 0) (= x 0)) (> 8 x)) (* (+ (> y 0) (= y 0)) (> 8 y)))"
-      )
-    ; ( "inBounds", ["pt"], MaxSteps 0,
-        "(inBounds1 (f pt) (r pt))"
       )
     ; ( "manhattanDistance", ["m"], MaxSteps 0,
         "(abs (- (m$fromX m) (m$toX m)))"
@@ -178,7 +175,7 @@ let program =
         "(availableJumps (if jlist (c (c atX atY) a) a) (+ s 2) color dx dy x y b)"
       )
     ; ( "availableJumps1", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"; "atX"; "atY"], AList [Point (0,0)],
-        "(if (inBounds (c atX atY)) (availableJumps2 a s color dx dy x y b atX atY (jumps color (c (c x y) (c atX atY)) b)) a)"
+        "(if (inBounds atX atY) (availableJumps2 a s color dx dy x y b atX atY (jumps color (c (c x y) (c atX atY)) b)) a)"
       )
     ; ( "availableJumps", ["a"; "s"; "color"; "dx"; "dy"; "x"; "y"; "b"], AList [Point (0,0)],
         "(availableJumps1 a s color dx dy x y b (+ x (* s dx)) (+ y (* s dy)))"
@@ -207,26 +204,29 @@ let program =
     ; ( "oneSpaceMovesRaw", ["checker"], AList [Point (0,0)],
         "(oneSpaceMovesRaw1 checker (list (c -1 1) (c -1 -1) (c 1 1) (c 1 -1)))"
       )
-    ; ( "oneSpaceMovesInBounds1", ["pt"; "l"; "dx"; "dy"], AList [Point (0,0)],
-        "(if (inBounds (c (+ dx (f pt)) (+ dy (r pt)))) (c (f l) (oneSpaceMovesInBounds pt (r l))) (oneSpaceMovesInBounds pt (r l)))"
+    ; ( "oneSpaceMovesInBounds1", ["x"; "y"; "dx"; "dy"; "head"; "rest"], AList [Point (0,0)],
+        "(if (inBounds (+ dx x) (+ dy y)) (c head rest) rest)"
       )
     ; ( "oneSpaceMovesInBounds", ["pt";"l"], AList [Point (0,0)],
-        "(if l (oneSpaceMovesInBounds1 pt l (f (f l)) (r (f l))) ())"
+        "(if l (oneSpaceMovesInBounds1 (f pt) (r pt) (f (f l)) (r (f l)) (f l) (oneSpaceMovesInBounds pt (r l))) ())"
       )
-    ; ( "oneSpaceMovesNotBlocked1", ["pt"; "b"; "l"; "dx"; "dy"], AList [Point (0,0)],
-        "(if (checkerAt (c (+ dx (f pt)) (+ dy (r pt))) b) (oneSpaceMovesNotBlocked pt b (r l)) (c (f l) (oneSpaceMovesNotBlocked pt b (r l))))"
+    ; ( "oneSpaceMovesNotBlocked1", ["pt"; "b"; "dx"; "dy"; "rest"], AList [Point (0,0)],
+        "(if (checkerAt (c (+ dx (f pt)) (+ dy (r pt))) b) rest (c (c dx dy) rest))"
       )
     ; ( "oneSpaceMovesNotBlocked", ["pt"; "b"; "l"], AList [Point (0,0)],
-        "(if l (oneSpaceMovesNotBlocked1 pt b l (f (f l)) (r (f l))) ())"
+        "(if l (oneSpaceMovesNotBlocked1 pt b (f (f l)) (r (f l)) (oneSpaceMovesNotBlocked pt b (r l))) ())"
       )
     ; ( "concat", ["l1"], AList [Step 0],
         "(if l1 (if (f l1) (c (f (f l1)) (concat (c (r (f l1)) (r l1)))) (concat (r l1))) ())"
       )
+    ; ( "mapToAvailableJumps1", ["color"; "pt"; "b"; "x"; "y"; "rest"], AList [Point (0,0)],
+        "(c (availableJumps () 2 color x y (f pt) (r pt) b) (mapToAvailableJumps color pt b rest))"
+      )
     ; ( "mapToAvailableJumps", ["color"; "pt"; "b"; "l"], AList [Point (0,0)],
-        "(if l (c (availableJumps () 2 color (f (f l)) (r (f l)) (f pt) (r pt) b)) (mapToAvailableJumps color pt b (r l)))"
+        "(if l (mapToAvailableJumps1 color pt b (f (f l)) (r (f l)) (r l)) ())"
       )
     ; ( "allowedJumps", ["color"; "pt"; "b"; "l"], AList [Point (0,0)],
-        "()" (* "(concat (mapToAvailableJumps color pt b l))" *)
+        "(concat (mapToAvailableJumps color pt b l))"
       )
     ; ( "availableMovesForChecker1", ["ch";"pt";"b";"movesInBounds"], AList [Point (0,0)],
         "(concat (list (allowedJumps (checkerColor ch) pt b movesInBounds) (oneSpaceMovesNotBlocked pt b movesInBounds)))"
