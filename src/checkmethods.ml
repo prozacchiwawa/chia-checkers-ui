@@ -165,20 +165,14 @@ let allowedJumps c pt b l =
       )
       l
 
-let availableMovesForChecker c x y b =
-  let allowedOneSpaceMoves =
-    oneSpaceMovesRaw c
-    |> oneSpaceMovesInBounds (x,y)
-  in
-  let jumps =
-    allowedOneSpaceMoves
-    |> allowedJumps (checkerColor c) (x,y) b
-  in
-  List.concat
-    [ jumps
-    ; oneSpaceMovesNotBlocked (x,y) b allowedOneSpaceMoves
-      |> List.map (fun (dx,dy) -> (x + dx, y + dy))
-    ]
+let availableMovesForChecker ch x y b =
+  match exec program "availableMovesForChecker" [Checker ch; Point (x,y); Board b] with
+  | AList l ->
+    List.map
+      (function
+        | Point (x,y) -> (x,y)
+      )
+      l
 
 let availableMoves b =
   let withColor = listCheckersWithColor 0 b.next b in

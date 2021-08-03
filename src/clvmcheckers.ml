@@ -228,14 +228,14 @@ let program =
     ; ( "allowedJumps", ["color"; "pt"; "b"; "l"], AList [Point (0,0)],
         "(concat (mapToAvailableJumps color pt b l))"
       )
-    ; ( "availableMovesForChecker1", ["ch";"pt";"b";"movesInBounds"], AList [Point (0,0)],
-        "(concat (list (allowedJumps (checkerColor ch) pt b movesInBounds) (oneSpaceMovesNotBlocked pt b movesInBounds)))"
+    ; ( "availableMovesForChecker1", ["color";"pt";"b";"movesInBounds"], AList [Point (0,0)],
+        "(concat (list (allowedJumps color pt b movesInBounds) (offsetPoints pt (oneSpaceMovesNotBlocked pt b movesInBounds))))"
       )
     ; ( "offsetPoints", ["pt"; "l"], AList [Point (0,0)],
         "(if l (c (c (+ (f pt) (f (f l))) (+ (r pt) (r (f l)))) (offsetPoints pt (r l))) ())"
       )
     ; ( "availableMovesForChecker", ["ch";"pt";"b"], AList [Point (0,0)],
-        "(availableMovesForChecker1 ch pt b (offsetPoints pt (oneSpaceMovesInBounds pt (oneSpaceMovesRaw ch pt b))))"
+        "(availableMovesForChecker1 (checkerColor ch) pt b (oneSpaceMovesInBounds pt (oneSpaceMovesRaw ch pt b)))"
       )
     ]
   in
