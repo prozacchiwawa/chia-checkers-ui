@@ -156,10 +156,14 @@ let oneSpaceMovesNotBlocked pt b l =
       )
       l
 
-let allowedJumps c (x,y) b l =
-  l
-  |> List.map (fun (dx,dy) -> availableJumps [] 2 c dx dy x y b)
-  |> List.concat
+let allowedJumps c pt b l =
+  match exec program "allowedJumps" [Color c; Point pt; Board b; AList (List.map (fun (x,y) -> Point (x,y)) l)] with
+  | AList l ->
+    List.map
+      (function
+        | Point (x,y) -> (x,y)
+      )
+      l
 
 let availableMovesForChecker c x y b =
   let allowedOneSpaceMoves =
