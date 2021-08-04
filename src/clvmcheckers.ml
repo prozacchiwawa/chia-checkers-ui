@@ -264,6 +264,9 @@ let program =
     ; ( "filterSpaceIsFree", ["ch"; "m"; "b"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (checkerAt (r m) b) () ch) ())"
       )
+    ; ( "filterToIsKing", ["ch"], Maybe (AJust (Step 0)),
+        "(if ch (just (isKing (fromJust ch))) ())"
+      )
     ]
   in
   let progbody =
