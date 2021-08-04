@@ -70,11 +70,26 @@ let nextMove b =
   match exec program "nextMove" [Board b] with
   | Board b -> b
 
+let optionToMaybe f = function
+  | Some x -> Maybe (AJust (f x))
+  | _ -> Maybe ANothing
+
+let optionFromMaybe (f : argLabel -> 'a) : argLabel -> 'a option = function
+  | Maybe (AJust x) -> Some (f x)
+  | _ -> None
+
+let filterCorrectColor b (ch : checker option) : checker option =
+  exec program "filterCorrectColor" [optionToMaybe (fun x -> Checker x) ch; Board b]
+  |> optionFromMaybe
+    (function
+      | Checker x -> x
+    )
+
 let move m b =
   let (dx, dy) = direction m in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
-  |> Xoption.filter (fun ch -> b.next = checkerColor ch)
+  |> filterCorrectColor b
   |> Xoption.filter (fun _ -> validDiagonal m)
   |> Xoption.filter (fun _ -> checkerAt m.toX m.toY b = None)
   |> Option.map isKing

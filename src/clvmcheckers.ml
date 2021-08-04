@@ -255,6 +255,9 @@ let program =
     ; ( "availableMoves", ["b"], AList [Move selfMove],
         "(concat (mapAvailableMovesForChecker b (listCheckersWithColor 0 (board$next b) b)))"
       )
+    ; ( "filterCorrectColor", ["ch"; "b"], Maybe (AJust (Checker (King Red))),
+        "(if ch (if (= (checkerColor (fromJust ch)) (board$next b)) ch ()) ())"
+      )
     ]
   in
   let progbody =
