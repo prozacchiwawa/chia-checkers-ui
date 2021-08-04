@@ -261,6 +261,9 @@ let program =
     ; ( "filterValidDiagonal", ["ch"; "m"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (validDiagonal m) ch ()) ())"
       )
+    ; ( "filterSpaceIsFree", ["ch"; "m"; "b"], Maybe (AJust (Checker (King Red))),
+        "(if ch (if (checkerAt (r m) b) () ch) ())"
+      )
     ]
   in
   let progbody =

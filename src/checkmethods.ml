@@ -92,13 +92,20 @@ let filterValidDiagonal m ch =
       | Checker x -> x
     )
 
+let filterSpaceIsFree m b ch =
+  exec program "filterSpaceIsFree" [optionToMaybe (fun x -> Checker x) ch; Move m; Board b]
+  |> optionFromMaybe
+    (function
+      | Checker x -> x
+    )
+
 let move m b =
   let (dx, dy) = direction m in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
   |> filterCorrectColor b
   |> filterValidDiagonal m
-  |> Xoption.filter (fun _ -> checkerAt m.toX m.toY b = None)
+  |> filterSpaceIsFree m b
   |> Option.map isKing
   |> Xoption.filter (fun king -> king || forward b.next dy)
   |> Option.map (fun king -> if king then King b.next else Pawn b.next)
