@@ -115,8 +115,14 @@ let filterKingOrForward m b k =
       | _ -> true
     )
 
+let mapKingToChecker b k =
+  exec program "mapKingToChecker" [Board b; optionToMaybe (fun x -> if x then Step 1 else Step 0) k]
+  |> optionFromMaybe
+    (function
+      | Checker ch -> ch
+    )
+
 let move m b =
-  let (dx, dy) = direction m in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
   |> filterCorrectColor b
@@ -124,8 +130,7 @@ let move m b =
   |> filterSpaceIsFree m b
   |> filterToIsKing
   |> filterKingOrForward m b
-  |> Xoption.filter (fun king -> king || forward b.next dy)
-  |> Option.map (fun king -> if king then King b.next else Pawn b.next)
+  |> mapKingToChecker b
   |> Option.bind
     (fun checker ->
        let jumps =

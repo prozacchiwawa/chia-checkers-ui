@@ -270,6 +270,9 @@ let program =
     ; ( "filterKingOrForward", ["m"; "b"; "mKing"], Maybe (AJust (Step 0)),
         "(if mKing (if (+ (fromJust mKing) (forward (board$next b) (r (direction m)))) mKing ()) ())"
       )
+    ; ( "mapKingToChecker", ["b"; "mKing"], Maybe (AJust (Checker (King Red))),
+        "(if mKing (just (c (fromJust mKing) (board$next b))) ())"
+      )
     ]
   in
   let progbody =
