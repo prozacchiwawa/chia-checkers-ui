@@ -258,6 +258,9 @@ let program =
     ; ( "filterCorrectColor", ["ch"; "b"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (= (checkerColor (fromJust ch)) (board$next b)) ch ()) ())"
       )
+    ; ( "filterValidDiagonal", ["ch"; "m"], Maybe (AJust (Checker (King Red))),
+        "(if ch (if (validDiagonal m) ch ()) ())"
+      )
     ]
   in
   let progbody =

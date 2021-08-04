@@ -85,12 +85,19 @@ let filterCorrectColor b (ch : checker option) : checker option =
       | Checker x -> x
     )
 
+let filterValidDiagonal m ch =
+  exec program "filterValidDiagonal" [optionToMaybe (fun x -> Checker x) ch; Move m]
+  |> optionFromMaybe
+    (function
+      | Checker x -> x
+    )
+
 let move m b =
   let (dx, dy) = direction m in
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
   |> filterCorrectColor b
-  |> Xoption.filter (fun _ -> validDiagonal m)
+  |> filterValidDiagonal m
   |> Xoption.filter (fun _ -> checkerAt m.toX m.toY b = None)
   |> Option.map isKing
   |> Xoption.filter (fun king -> king || forward b.next dy)
