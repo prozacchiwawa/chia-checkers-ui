@@ -267,6 +267,9 @@ let program =
     ; ( "filterToIsKing", ["ch"], Maybe (AJust (Step 0)),
         "(if ch (just (isKing (fromJust ch))) ())"
       )
+    ; ( "filterKingOrForward", ["m"; "b"; "mKing"], Maybe (AJust (Step 0)),
+        "(if mKing (if (+ (fromJust mKing) (forward (board$next b) (r (direction m)))) mKing ()) ())"
+      )
     ]
   in
   let progbody =
