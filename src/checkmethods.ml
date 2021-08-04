@@ -122,6 +122,24 @@ let mapKingToChecker b k =
       | Checker ch -> ch
     )
 
+let rejectIfLongDistanceAndNoJumps m b ch : (checker * ((int * int) list)) option =
+  exec program "rejectIfLongDistanceAndNoJumps"
+    [ Move m
+    ; Board b
+    ; optionToMaybe (fun ch -> Checker ch) ch
+    ]
+  |> optionFromMaybe
+    (function
+      | APair (Checker ch, AList l) ->
+        ( ch
+        , List.map
+            (function
+              | Point (x,y) -> (x,y)
+            )
+            l
+        )
+    )
+
 let move m b =
   let md = manhattanDistance m in
   checkerAt m.fromX m.fromY b
@@ -131,16 +149,7 @@ let move m b =
   |> filterToIsKing
   |> filterKingOrForward m b
   |> mapKingToChecker b
-  |> Option.bind
-    (fun checker ->
-       let jumps =
-         if md == 1 then
-           Some []
-         else
-           jumps b.next m b |> Option.map PointSet.elements
-       in
-       jumps |> Option.map (fun j -> (checker,j))
-    )
+  |> rejectIfLongDistanceAndNoJumps m b
   |> Option.map
     (fun (checker,jumps) ->
        let color = checkerColor checker in

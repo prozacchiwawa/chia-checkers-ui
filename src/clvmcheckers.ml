@@ -273,6 +273,12 @@ let program =
     ; ( "mapKingToChecker", ["b"; "mKing"], Maybe (AJust (Checker (King Red))),
         "(if mKing (just (c (fromJust mKing) (board$next b))) ())"
       )
+    ; ( "rejectIfLongDistanceAndNoJumps1", ["ch"; "jumps"], Maybe (AJust (APair (Checker (King Red), AList [Point (0,0)]))),
+        "(if jumps (just (c ch (fromJust jumps))) ())"
+      )
+    ; ( "rejectIfLongDistanceAndNoJumps", ["m"; "b"; "ch"], Maybe (AJust (APair (Checker (King Red), AList [Point (0,0)]))),
+        "(if ch (if (= (manhattanDistance m) 1) (just (c (fromJust ch) ())) (rejectIfLongDistanceAndNoJumps1 (fromJust ch) (jumps (board$next b) m b))) ())"
+      )
     ]
   in
   let progbody =
