@@ -54,8 +54,8 @@ let program =
     ; ( "checkerAt", ["pt"; "b"], Maybe (AJust (Checker (King Red))),
         "(checkerAt1 (maskFor pt) b)"
       )
-    ; ( "removeChecker1", ["mask"; "(next king red black)"], Board emptyBoard,
-        "(list next (logxor king (if (logand mask king) mask 0)) (logxor red (if (logand mask red) mask 0)) (logxor black (if (logand mask black) mask 0)))"
+    ; ( "removeChecker1", ["mask"; "b"], Board emptyBoard,
+        "(list (board$next b) (logxor (board$king b) (if (logand mask (board$king b)) mask 0)) (logxor (board$red b) (if (logand mask (board$red b)) mask 0)) (logxor (board$black b) (if (logand mask (board$black b)) mask 0)))"
       )
     ; ( "removeChecker", ["pt"; "b"], Board emptyBoard,
         "(removeChecker1 (maskFor pt) b)"
@@ -255,13 +255,13 @@ let program =
     ; ( "availableMoves", ["b"], AList [Move selfMove],
         "(concat (mapAvailableMovesForChecker b (listCheckersWithColor 0 (board$next b) b)))"
       )
-    ; ( "filterCorrectColor", ["ch"; "b"], Maybe (AJust (Checker (King Red))),
+    ; ( "filterCorrectColor", ["b"; "ch"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (= (checkerColor (fromJust ch)) (board$next b)) ch ()) ())"
       )
-    ; ( "filterValidDiagonal", ["ch"; "m"], Maybe (AJust (Checker (King Red))),
+    ; ( "filterValidDiagonal", ["m"; "ch"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (validDiagonal m) ch ()) ())"
       )
-    ; ( "filterSpaceIsFree", ["ch"; "m"; "b"], Maybe (AJust (Checker (King Red))),
+    ; ( "filterSpaceIsFree", ["m"; "b"; "ch"], Maybe (AJust (Checker (King Red))),
         "(if ch (if (checkerAt (r m) b) () ch) ())"
       )
     ; ( "filterToIsKing", ["ch"], Maybe (AJust (Step 0)),
@@ -278,6 +278,24 @@ let program =
       )
     ; ( "rejectIfLongDistanceAndNoJumps", ["m"; "b"; "ch"], Maybe (AJust (APair (Checker (King Red), AList [Point (0,0)]))),
         "(if ch (if (= (manhattanDistance m) 1) (just (c (fromJust ch) ())) (rejectIfLongDistanceAndNoJumps1 (fromJust ch) (jumps (board$next b) m b))) ())"
+      )
+    ; ( "removePieces", ["b"; "jumps"], Board emptyBoard,
+        "(if jumps (removePieces (removeChecker (f jumps) b) (r jumps)) b)"
+      )
+    ; ( "updateBoardWithRemovedJumps", ["m"; "b"; "ch"], Board emptyBoard,
+        "(addChecker (r m) ch b)"
+      )
+    ; ( "maybePromote", ["m"; "ch"], Board emptyBoard,
+        "(if (= (kingRow (checkerColor ch)) (r (r m))) (c 1 (checkerColor ch)) ch)"
+      )
+    ; ( "updateBoardWithMove", ["m"; "b"; "tmj"], Maybe (AJust (Board emptyBoard)),
+        "(if tmj (just (updateBoardWithRemovedJumps m (removePieces (removeChecker (f m) b) (r (fromJust tmj))) (maybePromote m (f (fromJust tmj))))) ())"
+      )
+    ; ( "mapNextMove", ["b"], Maybe (AJust (Board emptyBoard)),
+        "(if b (just (nextMove (fromJust b))) ())"
+      )
+    ; ( "move", ["m"; "b"], Maybe (AJust (Board emptyBoard)),
+        "(mapNextMove (updateBoardWithMove m b (rejectIfLongDistanceAndNoJumps m b (mapKingToChecker b (filterKingOrForward m b (filterToIsKing (filterSpaceIsFree m b (filterValidDiagonal m (filterCorrectColor b (checkerAt (f m) b))))))))))"
       )
     ]
   in

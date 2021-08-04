@@ -140,32 +140,17 @@ let rejectIfLongDistanceAndNoJumps m b ch : (checker * ((int * int) list)) optio
         )
     )
 
-let move m b =
-  let md = manhattanDistance m in
-  checkerAt m.fromX m.fromY b
-  |> filterCorrectColor b
-  |> filterValidDiagonal m
-  |> filterSpaceIsFree m b
-  |> filterToIsKing
-  |> filterKingOrForward m b
-  |> mapKingToChecker b
-  |> rejectIfLongDistanceAndNoJumps m b
-  |> Option.map
-    (fun (checker,jumps) ->
-       let color = checkerColor checker in
-       let promoted =
-         if m.toY = kingRow color then
-           King color
-         else
-           checker
-       in
-       jumps
-       |> List.fold_left
-         (fun b (x,y) -> removeChecker x y b)
-         (removeChecker m.fromX m.fromY b)
-       |> addChecker m.toX m.toY promoted
+let updateBoardWithMove m b tmj : checkersBoard option =
+  exec program "updateBoardWithMove" [Move m; Board b; optionToMaybe (fun (ch,pts) -> APair (Checker ch, AList (List.map (fun pt -> Point pt) pts))) tmj]
+  |> optionFromMaybe
+    (function
+      | Board b -> b
     )
-  |> Option.map nextMove
+
+let move m b =
+  match exec program "move" [Move m; Board b] with
+  | Maybe (AJust (Board b)) -> Some b
+  | _ -> None
 
 (* For some direction dx, dy, check each possible jump to see if jumps
  * detects that it's a valid jump
