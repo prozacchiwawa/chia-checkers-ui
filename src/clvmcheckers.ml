@@ -237,6 +237,24 @@ let program =
     ; ( "availableMovesForChecker", ["ch";"pt";"b"], AList [Point (0,0)],
         "(availableMovesForChecker1 (checkerColor ch) pt b (oneSpaceMovesInBounds pt (oneSpaceMovesRaw ch pt b)))"
       )
+    ; ( "createCheckerMoves2", ["x"; "y"; "target"], Move selfMove,
+        "(c (c x y) target)"
+      )
+    ; ( "createCheckerMoves1", ["x"; "y"; "targets"], AList [Move selfMove],
+        "(if targets (c (createCheckerMoves2 x y (f targets)) (createCheckerMoves1 x y (r targets))) ())"
+      )
+    ; ( "createCheckerMoves", ["c"; "pt"; "b"], AList [Move selfMove],
+        "(createCheckerMoves1 (f pt) (r pt) (availableMovesForChecker c pt b))"
+      )
+    ; ( "mapAvailableMovesForChecker1", ["b"; "pcpair"], AList [Move selfMove],
+        "(createCheckerMoves (r pcpair) (f pcpair) b)"
+      )
+    ; ( "mapAvailableMovesForChecker", ["b"; "l"], AList [Move selfMove],
+        "(if l (c (mapAvailableMovesForChecker1 b (f l)) (mapAvailableMovesForChecker b (r l))) ())"
+      )
+    ; ( "availableMoves", ["b"], AList [Move selfMove],
+        "(concat (mapAvailableMovesForChecker b (listCheckersWithColor 0 (board$next b) b)))"
+      )
     ]
   in
   let progbody =

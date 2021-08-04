@@ -175,15 +175,13 @@ let availableMovesForChecker ch x y b =
       l
 
 let availableMoves b =
-  let withColor = listCheckersWithColor 0 b.next b in
-  withColor
-  |> List.map
-    (fun (x,y,c) ->
-       availableMovesForChecker c x y b
-       |> List.map
-         (fun (nx,ny) -> { fromX = x ; fromY = y; toX = nx ; toY = ny })
-    )
-  |> List.concat
+  match exec program "availableMoves" [Board b] with
+  | AList ms ->
+    List.map
+      (function
+        | Move m -> m
+      )
+      ms
 
 let colorToString = function
   | Red -> "red"
