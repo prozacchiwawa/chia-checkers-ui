@@ -2,11 +2,6 @@ open Checktypes
 open Clvmcheckers
 open Dsl
 
-let checkerAt x y b =
-  match exec program "checkerAt" [Point (x,y); Board b] with
-  | Maybe (AJust (Checker c)) -> Some c
-  | Maybe ANothing -> None
-
 let checkerColor = function
   | King c -> c
   | Pawn c -> c
@@ -18,6 +13,11 @@ let otherColor = function
 let isKing = function
   | King _ -> true
   | _ -> false
+
+let checkerAt x y b =
+  match exec program "checkerAt" [Point (x,y); Board b] with
+  | Maybe (AJust (Checker c)) -> Some c
+  | Maybe ANothing -> None
 
 let move m b =
   match exec program "move" [Move m; Board b] with
