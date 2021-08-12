@@ -294,8 +294,14 @@ let program =
     ; ( "mapNextMove", ["b"], Maybe (AJust (Board emptyBoard)),
         "(if b (just (nextMove (fromJust b))) ())"
       )
-    ; ( "move", ["m"; "b"], Maybe (AJust (Board emptyBoard)),
+    ; ( "move2", ["m"; "b"], Maybe (AJust (Board emptyBoard)),
         "(mapNextMove (updateBoardWithMove m b (rejectIfLongDistanceAndNoJumps m b (mapKingToChecker b (filterKingOrForward m b (filterToIsKing (filterSpaceIsFree m b (filterValidDiagonal m (filterCorrectColor b (checkerAt (f m) b))))))))))"
+      )
+    ; ( "move1", ["mB"], Board emptyBoard,
+        "(if mB (fromJust mB) (x \"invalid move\"))"
+      )
+    ; ( "move", ["m"; "b"], Board emptyBoard,
+        "(move1 (move2 m b))"
       )
     ]
   in

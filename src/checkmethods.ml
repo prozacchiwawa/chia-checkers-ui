@@ -21,8 +21,7 @@ let checkerAt x y b =
 
 let move m b =
   match exec program "move" [Move m; Board b] with
-  | Maybe (AJust (Board b)) -> Some b
-  | _ -> None
+  | Board b -> b
 
 let availableMoves b =
   match exec program "availableMoves" [Board b] with

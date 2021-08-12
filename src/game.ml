@@ -62,19 +62,15 @@ let click x y game =
       }
     in
     if CheckersMoveSet.mem m game.allowedMoves then
-      move m game.board
-      |> Option.map
-        (fun newBoard ->
-           let newMoves =
-             availableMoves newBoard
-             |> CheckersMoveSet.of_list
-           in
-           { game with
-             selectedChecker = None
-           ; board = newBoard
-           ; allowedMoves = newMoves
-           }
-        )
-      |> Xoption.default rejectGame
+      let newBoard = move m game.board in
+      let newMoves =
+        availableMoves newBoard
+        |> CheckersMoveSet.of_list
+      in
+      { game with
+        selectedChecker = None
+      ; board = newBoard
+      ; allowedMoves = newMoves
+      }
     else
       rejectGame
